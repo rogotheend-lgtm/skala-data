@@ -24,7 +24,7 @@ from pipeline import WeatherModel, CountryModel, IPModel
 def test_weather_model_validation_success():
     """
     [Test Case 1] Weather 모델의 정상 데이터 및 다형성 타입 검증
-    - 목적: 복잡한 런타임 환경에서 문자열(str)과 숫자형(float, int)이 혼재된 Union 구조를 
+    - 목적: 복잡한 런타임 환경에서 문자열(str)과 숫자형(float, int)이 혼재된 Union 구조를
            Pydantic v2 가 안전하게 유효성 검증을 통과시키는지 확인
     """
     valid_data = {
@@ -32,13 +32,16 @@ def test_weather_model_validation_success():
         "longitude": 126.978,
         "timezone": "Asia/Seoul",
         "hourly": {
-            "time": ["2026-07-21T12:00", "2026-07-21T13:00"],  # ISO 타임스탬프 문자열 수용 검증
-            "temperature_2m": [24.5, 25.0]                    # 부동 소수점 데이터 수용 검증
-        }
+            "time": [
+                "2026-07-21T12:00",
+                "2026-07-21T13:00",
+            ],  # ISO 타임스탬프 문자열 수용 검증
+            "temperature_2m": [24.5, 25.0],  # 부동 소수점 데이터 수용 검증
+        },
     }
     # 데이터 파싱 및 객체화 수행
     model = WeatherModel(**valid_data)
-    
+
     # 정적 타이핑 및 값 검증 단언(Assert)
     assert model.latitude == 37.5665
     assert "time" in model.hourly
@@ -53,11 +56,11 @@ def test_country_model_fallback_structure():
     mock_api_data = {
         "name": "South Korea (Fallback)",
         "alpha2": "KR",  # 스키마 내부에서 alpha2Code로 변환되어야 함
-        "capital": "Seoul"
+        "capital": "Seoul",
     }
     # 데이터 파싱 및 객체화 수행
     model = CountryModel(**mock_api_data)
-    
+
     # Alias 필드 매핑 정합성 단언(Assert)
     assert model.name == "South Korea (Fallback)"
     assert model.alpha2Code == "KR"
@@ -71,10 +74,10 @@ def test_ip_model_validation_failure():
     """
     invalid_data = {
         "status": "fail",
-        "country": "United States"
+        "country": "United States",
         # 의도적으로 필수 필드인 'query'를 누락시켜 에러 시뮬레이션 수행
     }
-    
+
     # 예외(ValidationError)가 반드시 발생해야 패스되는 컨텍스트 매니저 구성
     with pytest.raises(ValidationError):
         IPModel(**invalid_data)
